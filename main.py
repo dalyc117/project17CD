@@ -33,6 +33,7 @@ all_sprites = pygame.sprite.Group()
 # Instantiate Player and ball
 player = Player.Player()
 ball = Ball.Ball()
+# Create some groups and a clock
 all_sprites.add(player)
 all_sprites.add(ball)
 bricks = pygame.sprite.Group()
@@ -45,7 +46,7 @@ game_over = False
 while game_running:
     screen.fill(L_grey)
 
-    # Loop generates new brick wall when none left
+    # Loop generates new brick wall when no bricks left
     if len(bricks.sprites()) == 0:
         for j in range(0, 8):
             for i in range(0, 9):
@@ -53,7 +54,7 @@ while game_running:
                 newbrick = Brick.Brick((i + 1) * 100, (100 + (j + 1) * 25), (Brick.Row_colour.get(j)))
                 all_sprites.add(newbrick)
                 bricks.add(newbrick)
-
+        # Resets other aspects of the game
         ball.rect = ball.surf.get_rect(
             center=(500, 850))
         speed[0] = abs(speed[0]) + 2
@@ -75,9 +76,11 @@ while game_running:
         elif event.type == QUIT:
             game_running = False
 
+    # Check for player and ball collision
     if pygame.Rect.colliderect(ball.rect, player):
         speed[1] = -speed[1]
 
+    # Check for ball and brick collision
     if pygame.sprite.spritecollideany(ball, bricks):
         collided_brick = pygame.sprite.spritecollideany(ball, bricks)
         if collided_brick != None:
@@ -85,19 +88,22 @@ while game_running:
         speed[1] = -speed[1]
         score = score + 20
 
+    # Check for game over and show game over screen
     if game_over == True:
         if event.type == KEYDOWN:
-            # Enter key
+            # Check for restart request, and execute
             if event.key == K_RETURN:
-                for entity in bricks:
+                for entity in bricks:  # remove all bricks from the previous game
                     entity.kill()
                 pygame.display.flip()
+                # Restore these to their original values
                 game_over = False
                 score = -1000
                 lives = 5
                 level = 0
                 speed = [8, -8]
 
+        # Display Game Over text
         G_over1 = font.render("GAME OVER", True, D_grey)
         textRect = G_over1.get_rect()
         textRect.center = (Screen_Width / 2, (Screen_Height / 2) - 50)
@@ -122,6 +128,7 @@ while game_running:
     # update player position based on key presses
     player.update(pressed_keys, Screen_Width)
 
+    # Text displayed during gameplay
     if game_over == False:
         Score = font.render(f'SCORE: {score}', True, D_grey)
         textRect = Score.get_rect()
@@ -138,11 +145,13 @@ while game_running:
         textRect.center = (800, 50)
         screen.blit(Lives, textRect)
 
+    # Update ball position and check remaining lives
     lives = ball.update(lives, Screen_Width, Screen_Height, speed)
     if lives == 0:
         game_over = True
         speed = [0, 0]
 
+    # Draw all sprites on screen
     if game_over == False:
         for entity in all_sprites:
             screen.blit(entity.surf, entity.rect)
