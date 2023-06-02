@@ -15,7 +15,7 @@ from pygame.locals import (
 Screen_Width = 1000
 Screen_Height = 1000
 # Score is +1000 whenever a new wall is generated, including the first one
-score = -1000
+score = -2000
 lives = 5
 level = 0
 speed = [8, -8]
@@ -51,7 +51,10 @@ while game_running:
         for j in range(0, 8):
             for i in range(0, 9):
                 # *100 is for pixel placement, 100+ is a fixed integer to make sure the blocks are not directly pressed against the top of the screen
-                newbrick = Brick.Brick((i + 1) * 100, (100 + (j + 1) * 25), (Brick.Row_colour.get(j)))
+                if j == 1:
+                    newbrick = Brick.Brick((i + 1) * 100, (100 + (j + 1) * 25), (Brick.Row_colour.get(j)), 2)
+                else:
+                    newbrick = Brick.Brick((i + 1) * 100, (100 + (j + 1) * 25), (Brick.Row_colour.get(j)), 1)
                 all_sprites.add(newbrick)
                 bricks.add(newbrick)
         # Resets other aspects of the game
@@ -59,7 +62,7 @@ while game_running:
             center=(500, 850))
         speed[0] = abs(speed[0]) + 2
         speed[1] = -(abs(speed[1]) + 2)
-        score = score + 1000
+        score = score + 2000
         level = level + 1
         for entity in all_sprites:
             screen.blit(entity.surf, entity.rect)
@@ -84,7 +87,9 @@ while game_running:
     if pygame.sprite.spritecollideany(ball, bricks):
         collided_brick = pygame.sprite.spritecollideany(ball, bricks)
         if collided_brick != None:
-            collided_brick.kill()
+            collided_brick.brick_lives = collided_brick.brick_lives - 1
+            if collided_brick.brick_lives == 0:
+                collided_brick.kill()
         speed[1] = -speed[1]
         score = score + 20
 
@@ -98,7 +103,7 @@ while game_running:
                 pygame.display.flip()
                 # Restore these to their original values
                 game_over = False
-                score = -1000
+                score = -2000
                 lives = 5
                 level = 0
                 speed = [8, -8]
